@@ -21,6 +21,7 @@ use macroquad::math::Vec2;
 use macroquad::miniquad::window::screen_size;
 use macroquad::shapes::draw_circle;
 use macroquad::shapes::draw_line;
+use macroquad::shapes::draw_triangle;
 use macroquad::time::get_frame_time;
 
 pub struct Gameplay {
@@ -129,10 +130,24 @@ impl Scene for Gameplay {
             // find intersections
             let mut intersections = vec![];
             for ray in &rays {
+                let mut closest_intersection: Option<Vec2> = None;
                 for w in &walls {
-                    if let Some(intersection) = ray.intersection(w) {
-                        intersections.push(intersection);
+                    if let Some(new_intersection) = ray.intersection(w) {
+                        if let Some(existing_int) = closest_intersection {
+                            if ray.origin.distance(existing_int)
+                                >= ray.origin.distance(new_intersection)
+                            {
+                                closest_intersection = Some(new_intersection);
+                            }
+                        } else {
+                            closest_intersection = Some(new_intersection);
+                        }
                     }
+                }
+
+                // only keep the nearest one
+                if let Some(intersection) = closest_intersection {
+                    intersections.push(intersection);
                 }
             }
 
