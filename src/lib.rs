@@ -7,6 +7,7 @@ pub mod dir;
 pub mod entity;
 pub mod font;
 pub mod input;
+pub mod math;
 pub mod save;
 pub mod scene;
 pub mod settings;

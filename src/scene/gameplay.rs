@@ -10,6 +10,8 @@ use crate::input::Action;
 use macroquad::color::GREEN;
 use macroquad::color::RED;
 use macroquad::color::WHITE;
+use macroquad::math::Circle;
+use macroquad::math::Rect;
 use macroquad::math::Vec2;
 use macroquad::miniquad::window::screen_size;
 use macroquad::shapes::draw_circle;
@@ -21,6 +23,7 @@ pub struct Gameplay {
     pause_subscene: Pause,
 
     player_position: Vec2,
+    // segments: Vec<Segment>,
 }
 
 const MOVEMENT_SPEED: f32 = 300.;
@@ -63,15 +66,19 @@ impl Scene for Gameplay {
             self.pause_subscene.draw(ctx);
         } else {
             // Draw obstacles
-            draw_rectangle(0., 0., 100., 100., GREEN);
-            draw_rectangle(0., 0., 100., 100., GREEN);
+            draw_line(0., 100., 100., 100., 2., GREEN);
+            draw_line(100., 0., 100., 100., 2., GREEN);
+            draw_line(300., 100., 400., 100., 2., GREEN);
+
             // Draw light source
             let source = self.player_position;
             draw_circle(source.x, source.y, 10., WHITE);
             // draw_texture(&ctx.textures.example, 400., 300., WHITE);
             // Draw lines from light source to corners of squares
 
+            draw_line(source.x, source.y, 100., 0., 1., RED);
             draw_line(source.x, source.y, 100., 100., 1., RED);
+            draw_line(source.x, source.y, 300., 100., 1., RED);
 
             // draw_text(
             //     ctx,
