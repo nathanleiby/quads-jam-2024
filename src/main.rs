@@ -31,7 +31,8 @@ async fn main() {
         ..Context::default().await
     };
 
-    let mut current_scene: Box<dyn Scene> = Box::new(MainMenu::new(&mut ctx).await);
+    // TODO: for now, just boot into gameplay
+    let mut current_scene: Box<dyn Scene> = Box::new(Gameplay::new(&mut ctx).await);
 
     loop {
         ///////// UPDATE
