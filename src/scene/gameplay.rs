@@ -1,3 +1,5 @@
+use std::f32::consts::PI;
+
 use super::pause::Pause;
 use super::Scene;
 use crate::audio::play_sfx;
@@ -7,16 +9,18 @@ use crate::context::Context;
 use crate::input::action_down;
 use crate::input::action_pressed;
 use crate::input::Action;
+use crate::math::Ray;
+use crate::math::Segment;
+use macroquad::color::BLUE;
 use macroquad::color::GREEN;
+use macroquad::color::ORANGE;
 use macroquad::color::RED;
 use macroquad::color::WHITE;
 use macroquad::math::Circle;
-use macroquad::math::Rect;
 use macroquad::math::Vec2;
 use macroquad::miniquad::window::screen_size;
 use macroquad::shapes::draw_circle;
 use macroquad::shapes::draw_line;
-use macroquad::shapes::draw_rectangle;
 use macroquad::time::get_frame_time;
 
 pub struct Gameplay {
@@ -65,29 +69,85 @@ impl Scene for Gameplay {
         if self.pause_subscene.active {
             self.pause_subscene.draw(ctx);
         } else {
-            // Draw obstacles
-            draw_line(0., 100., 100., 100., 2., GREEN);
-            draw_line(100., 0., 100., 100., 2., GREEN);
-            draw_line(300., 100., 400., 100., 2., GREEN);
-
             // Draw light source
             let source = self.player_position;
             draw_circle(source.x, source.y, 10., WHITE);
             // draw_texture(&ctx.textures.example, 400., 300., WHITE);
             // Draw lines from light source to corners of squares
 
+            // Create rays, sweeping over 360 degrees
+            // TODO: Replace with only rays pointed at each intersection point in scene
+            let mut rays = vec![];
+            let num_rays = 36;
+            for idx in 0..num_rays {
+                let ratio = idx as f32 / num_rays as f32;
+                let angle = ratio * 2. * PI;
+                rays.push(Ray {
+                    origin: source,
+                    dir: Vec2::new(angle.cos(), angle.sin()),
+                })
+            }
+
+            let walls = vec![
+                // outer walls
+                Segment {
+                    src: Vec2::new(0., 0.),
+                    dst: Vec2::new(0., VIRTUAL_HEIGHT),
+                },
+                Segment {
+                    src: Vec2::new(0., 0.),
+                    dst: Vec2::new(VIRTUAL_WIDTH, 0.),
+                },
+                Segment {
+                    src: Vec2::new(VIRTUAL_WIDTH, 0.),
+                    dst: Vec2::new(VIRTUAL_WIDTH, VIRTUAL_HEIGHT),
+                },
+                Segment {
+                    src: Vec2::new(0., VIRTUAL_HEIGHT),
+                    dst: Vec2::new(VIRTUAL_WIDTH, VIRTUAL_HEIGHT),
+                },
+                // inner obstacles
+                Segment {
+                    src: Vec2::new(0., 100.),
+                    dst: Vec2::new(100., 100.),
+                },
+                Segment {
+                    src: Vec2::new(100., 0.),
+                    dst: Vec2::new(100., 100.),
+                },
+                Segment {
+                    src: Vec2::new(300., 100.),
+                    dst: Vec2::new(400., 100.),
+                },
+            ];
+
+            // draw walls
+            for w in &walls {
+                draw_line(w.src.x, w.src.y, w.dst.x, w.dst.y, 4., BLUE);
+            }
+
+            // find intersections
+            let mut intersections = vec![];
+            for ray in &rays {
+                for w in &walls {
+                    if let Some(intersection) = ray.intersection(w) {
+                        intersections.push(intersection);
+                    }
+                }
+            }
+
+            // TODO: prune to only keep the closest intersections
+            // TODO: Move all the math outside, to clearly separate it from drawing logic
+
+            // draw rays and interactions
+            for intersection in intersections {
+                draw_line(source.x, source.y, intersection.x, intersection.y, 1., BLUE);
+                draw_circle(intersection.x, intersection.y, 2., ORANGE);
+            }
+
             draw_line(source.x, source.y, 100., 0., 1., RED);
             draw_line(source.x, source.y, 100., 100., 1., RED);
             draw_line(source.x, source.y, 300., 100., 1., RED);
-
-            // draw_text(
-            //     ctx,
-            //     "Gameplay!",
-            //     100.,
-            //     100.,
-            //     crate::text::Size::Medium,
-            //     WHITE,
-            // );
         }
     }
 }

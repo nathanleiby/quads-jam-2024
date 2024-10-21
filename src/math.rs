@@ -1,19 +1,19 @@
 use macroquad::math::Vec2;
 
-struct Ray {
-    origin: Vec2,
-    dir: Vec2,
+pub struct Ray {
+    pub origin: Vec2,
+    pub dir: Vec2,
 }
 
-struct Segment {
-    src: Vec2,
-    dst: Vec2,
+pub struct Segment {
+    pub src: Vec2,
+    pub dst: Vec2,
 }
 
 impl Segment {
     // parametric
     // Point + Direction * T
-    fn parametric_dir(self) -> Vec2 {
+    fn parametric_dir(&self) -> Vec2 {
         Vec2::new(self.dst.x - self.src.x, self.dst.y - self.src.y)
     }
 
@@ -28,7 +28,7 @@ fn cross(v: Vec2, w: Vec2) -> f32 {
 
 impl Ray {
     // https://stackoverflow.com/a/565282/950683
-    fn intersection(self, segment: Segment) -> (bool, Vec2) {
+    pub fn intersection(&self, segment: &Segment) -> Option<Vec2> {
         let p = self.origin;
         let r = self.dir;
 
@@ -51,21 +51,23 @@ impl Ray {
             (true, true) => {
                 // the lines are collinear (overlapping)
                 // TODO: Need to put actual intersectio
-                return (false, Vec2::default());
+                return None;
             }
             (true, false) => {
                 // parallel and non-intersecting
-                return (false, Vec2::default());
+                return None;
             }
             (false, _) => {
-                // if and 0 ≤ t ≤ 1 and 0 ≤ u ≤ 1, the two line segments meet at the point p + t r = q + u s.
-                if 0. <= t && t <= 1. && 0. <= u && u <= 1. {
-                    return (true, p + t * r);
+                // ray can extend infinitely (t >= 0), but segment is bounded
+                if t >= 0. && 0. <= u && u <= 1. {
+                    // if u >= 0. && 0. <= u && u >= 1. {
+                    return Some(p + t * r);
                 }
+                // }
             }
         }
 
-        return (false, Vec2::default());
+        return None;
     }
 }
 
@@ -83,7 +85,7 @@ mod tests {
             src: Vec2::new(1., -2.),
             dst: Vec2::new(1., 2.),
         };
-        assert_eq!(ray.intersection(seg), (true, Vec2::new(1., 0.)));
+        assert_eq!(ray.intersection(&seg), Some(Vec2::new(1., 0.)));
     }
 
     #[test]
@@ -96,7 +98,7 @@ mod tests {
             src: Vec2::new(1., -2.),
             dst: Vec2::new(1., 2.),
         };
-        assert_eq!(ray.intersection(seg), (true, Vec2::new(1., 1.)));
+        assert_eq!(ray.intersection(&seg), Some(Vec2::new(1., 1.)));
     }
 
     #[test]
@@ -110,6 +112,19 @@ mod tests {
             src: Vec2::new(1., -2.),
             dst: Vec2::new(1., 2.),
         };
-        assert_eq!(ray.intersection(seg), (false, Vec2::new(0., 0.)));
+        assert_eq!(ray.intersection(&seg), None);
+    }
+
+    #[test]
+    fn test_ray_intersection4() {
+        let ray = Ray {
+            origin: Vec2::new(30., 30.),
+            dir: Vec2::new(1., 0.),
+        };
+        let seg = Segment {
+            src: Vec2::new(100., 0.),
+            dst: Vec2::new(100., 100.),
+        };
+        assert_eq!(ray.intersection(&seg), Some(Vec2::new(100., 30.)));
     }
 }
