@@ -11,15 +11,10 @@ pub struct Segment {
 }
 
 impl Segment {
-    // parametric
-    // Point + Direction * T
+    // returns the Direction vector of the line in parametric form (Point + Direction * Time)
     fn parametric_dir(&self) -> Vec2 {
         Vec2::new(self.dst.x - self.src.x, self.dst.y - self.src.y)
     }
-
-    // fn slope(self) -> f32 {
-    //     (self.dst.y - self.src.y) / (self.dst.x - self.src.x)
-    // }
 }
 
 fn cross(v: Vec2, w: Vec2) -> f32 {
