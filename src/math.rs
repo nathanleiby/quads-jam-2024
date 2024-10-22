@@ -50,7 +50,7 @@ impl Ray {
         match (check1, check2) {
             (true, true) => {
                 // the lines are collinear (overlapping)
-                // TODO: Need to put actual intersectio
+                // TODO: Ignoring collision for now. Need to compute actual intersection
                 return None;
             }
             (true, false) => {
@@ -58,12 +58,10 @@ impl Ray {
                 return None;
             }
             (false, _) => {
-                // ray can extend infinitely (t >= 0), but segment is bounded
+                // ray can extend infinitely from its source (t >= 0), but segment is bounded by its endpoints (0 <= u <= 1)
                 if t >= 0. && 0. <= u && u <= 1. {
-                    // if u >= 0. && 0. <= u && u >= 1. {
                     return Some(p + t * r);
                 }
-                // }
             }
         }
 

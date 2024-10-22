@@ -12,6 +12,7 @@ use crate::input::Action;
 use crate::math::Ray;
 use crate::math::Segment;
 use macroquad::color::*;
+use macroquad::math::Rect;
 use macroquad::math::Vec2;
 use macroquad::rand;
 use macroquad::shapes::draw_circle;
@@ -23,9 +24,40 @@ pub struct Gameplay {
 
     player_position: Vec2,
     walls: Vec<Segment>,
+    asteroids: Vec<Asteroid>,
+    // health: usize,
 }
 
 const MOVEMENT_SPEED: f32 = 300.;
+// const STARTING_HEALTH: usize = 3;
+
+struct Asteroid {
+    rect: Rect,
+}
+
+impl Asteroid {
+    fn to_segments(&self) -> Vec<Segment> {
+        let r = self.rect;
+        vec![
+            Segment {
+                src: Vec2::new(r.x, r.y),
+                dst: Vec2::new(r.x + r.w, r.y),
+            },
+            Segment {
+                src: Vec2::new(r.x, r.y),
+                dst: Vec2::new(r.x, r.y + r.h),
+            },
+            Segment {
+                src: Vec2::new(r.x, r.y + r.h),
+                dst: Vec2::new(r.x + r.w, r.y + r.h),
+            },
+            Segment {
+                src: Vec2::new(r.x + r.w, r.y),
+                dst: Vec2::new(r.x + r.w, r.y + r.h),
+            },
+        ]
+    }
+}
 
 impl Scene for Gameplay {
     fn update(&mut self, ctx: &mut Context) {
@@ -38,6 +70,7 @@ impl Scene for Gameplay {
         }
 
         self._player_movement(ctx);
+        self._asteroid_movement();
     }
 
     fn draw(&mut self, ctx: &mut Context) {
@@ -53,6 +86,10 @@ impl Gameplay {
     pub async fn new(ctx: &mut Context) -> Self {
         let pause_subscene = Pause::new(ctx);
         let player_position = Vec2::new(300., 300.);
+
+        let asteroids = vec![Asteroid {
+            rect: Rect::new(300., 600., 30., 30.),
+        }];
 
         let mut walls = vec![
             // outer walls
@@ -114,6 +151,7 @@ impl Gameplay {
             pause_subscene,
             player_position,
             walls,
+            asteroids,
         }
     }
 
@@ -137,16 +175,35 @@ impl Gameplay {
             })
         }
 
+        let mut asteroids_segs = vec![];
+        for a in &self.asteroids {
+            for seg in a.to_segments() {
+                asteroids_segs.push(seg);
+            }
+        }
+
         // draw walls
         for w in &self.walls {
             draw_line(w.src.x, w.src.y, w.dst.x, w.dst.y, 4., BLUE);
+        }
+
+        for seg in &asteroids_segs {
+            draw_line(seg.src.x, seg.src.y, seg.dst.x, seg.dst.y, 2., BROWN);
+        }
+
+        let mut collideable = vec![];
+        for w in &self.walls {
+            collideable.push(w);
+        }
+        for s in &asteroids_segs {
+            collideable.push(s);
         }
 
         // find intersections
         let mut intersections = vec![];
         for ray in &rays {
             let mut closest_intersection: Option<Vec2> = None;
-            for w in &self.walls {
+            for w in &collideable {
                 if let Some(new_intersection) = ray.intersection(w) {
                     if let Some(existing_int) = closest_intersection {
                         if ray.origin.distance(existing_int)
@@ -202,6 +259,14 @@ impl Gameplay {
             self.player_position = self
                 .player_position
                 .clamp(Vec2::default(), Vec2::new(VIRTUAL_WIDTH, VIRTUAL_HEIGHT));
+        }
+    }
+
+    fn _asteroid_movement(&mut self) {
+        let asteroid_movement_speed = 50.;
+        let delta = get_frame_time();
+        for a in &mut self.asteroids {
+            a.rect.x += asteroid_movement_speed * delta;
         }
     }
 }
