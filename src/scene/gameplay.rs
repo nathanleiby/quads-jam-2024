@@ -1,4 +1,5 @@
 use std::f32::consts::PI;
+use std::f64::INFINITY;
 
 use super::pause::Pause;
 use super::Scene;
@@ -18,6 +19,7 @@ use macroquad::rand;
 use macroquad::shapes::draw_circle;
 use macroquad::shapes::draw_line;
 use macroquad::time::get_frame_time;
+use macroquad::time::get_time;
 
 pub struct Gameplay {
     pause_subscene: Pause,
@@ -25,11 +27,10 @@ pub struct Gameplay {
     player_position: Vec2,
     walls: Vec<Segment>,
     asteroids: Vec<Asteroid>,
-    // health: usize,
+    last_spawn_asteroid_time: f64,
 }
 
 const MOVEMENT_SPEED: f32 = 300.;
-// const STARTING_HEALTH: usize = 3;
 
 struct Asteroid {
     rect: Rect,
@@ -69,8 +70,14 @@ impl Scene for Gameplay {
             play_sfx(ctx, &ctx.audio.sfx.menu_select);
         }
 
-        self._player_movement(ctx);
-        self._asteroid_movement();
+        self.player_movement(ctx);
+        self.asteroid_movement();
+
+        let elapsed = get_time();
+        if elapsed > self.last_spawn_asteroid_time + 1. {
+            self.spawn_asteroid();
+            self.last_spawn_asteroid_time = elapsed;
+        }
     }
 
     fn draw(&mut self, ctx: &mut Context) {
@@ -152,6 +159,7 @@ impl Gameplay {
             player_position,
             walls,
             asteroids,
+            last_spawn_asteroid_time: -INFINITY,
         }
     }
 
@@ -238,7 +246,7 @@ impl Gameplay {
         }
     }
 
-    fn _player_movement(&mut self, ctx: &mut Context) {
+    fn player_movement(&mut self, ctx: &mut Context) {
         let mut movement_vec = Vec2::new(0., 0.);
         if action_down(Action::Up, &ctx.gamepads) {
             movement_vec.y += -1.;
@@ -262,11 +270,17 @@ impl Gameplay {
         }
     }
 
-    fn _asteroid_movement(&mut self) {
+    fn asteroid_movement(&mut self) {
         let asteroid_movement_speed = 50.;
         let delta = get_frame_time();
         for a in &mut self.asteroids {
             a.rect.x += asteroid_movement_speed * delta;
         }
+    }
+
+    fn spawn_asteroid(&mut self) {
+        self.asteroids.push(Asteroid {
+            rect: Rect::new(0., 0., 30., 30.),
+        })
     }
 }
