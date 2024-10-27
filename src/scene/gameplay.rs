@@ -1,5 +1,4 @@
 use std::f32::consts::PI;
-use std::f64::INFINITY;
 
 use super::pause::Pause;
 use super::Scene;
@@ -178,7 +177,7 @@ impl Gameplay {
             player_position,
             walls,
             asteroids,
-            last_spawn_asteroid_time: -INFINITY,
+            last_spawn_asteroid_time: -f64::INFINITY,
             bullets: vec![],
         }
     }

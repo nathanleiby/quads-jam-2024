@@ -54,13 +54,13 @@ impl Ray {
             }
             (false, _) => {
                 // ray can extend infinitely from its source (t >= 0), but segment is bounded by its endpoints (0 <= u <= 1)
-                if t >= 0. && 0. <= u && u <= 1. {
+                if t >= 0. && (0. ..=1.).contains(&u) {
                     return Some(p + t * r);
                 }
             }
         }
 
-        return None;
+        None
     }
 }
 
