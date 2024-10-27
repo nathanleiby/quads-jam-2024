@@ -35,6 +35,7 @@ pub struct Gameplay {
 const MOVEMENT_SPEED: f32 = 300.;
 const BULLET_RADIUS: f32 = 5.;
 const BULLET_COLOR: Color = GREEN;
+const BULLET_MOVEMENT_SPEED: f32 = 200.;
 
 struct Bullet {
     circle: Circle,
@@ -297,7 +298,6 @@ impl Gameplay {
 
     fn player_attack(&mut self, ctx: &mut Context) {
         let delta = get_frame_time();
-        let BULLET_MOVEMENT_SPEED = 200.;
         for b in &mut self.bullets {
             b.circle.x += BULLET_MOVEMENT_SPEED * delta;
         }
