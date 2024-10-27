@@ -13,6 +13,7 @@ use crate::input::Action;
 use crate::math::Ray;
 use crate::math::Segment;
 use macroquad::color::*;
+use macroquad::math::Circle;
 use macroquad::math::Rect;
 use macroquad::math::Vec2;
 use macroquad::rand;
@@ -28,9 +29,16 @@ pub struct Gameplay {
     walls: Vec<Segment>,
     asteroids: Vec<Asteroid>,
     last_spawn_asteroid_time: f64,
+    bullets: Vec<Bullet>,
 }
 
 const MOVEMENT_SPEED: f32 = 300.;
+const BULLET_RADIUS: f32 = 5.;
+const BULLET_COLOR: Color = GREEN;
+
+struct Bullet {
+    circle: Circle,
+}
 
 struct Asteroid {
     rect: Rect,
@@ -71,7 +79,17 @@ impl Scene for Gameplay {
         }
 
         self.player_movement(ctx);
+        self.player_attack(ctx);
         self.asteroid_movement();
+
+        let player_circle = Circle::new(self.player_position.x, self.player_position.y, 2.);
+        // check for collisions
+        for a in &self.asteroids {
+            if player_circle.overlaps_rect(&a.rect) {
+                // TODO: Handle the collision
+                println!("collision");
+            }
+        }
 
         let elapsed = get_time();
         if elapsed > self.last_spawn_asteroid_time + 1. {
@@ -160,6 +178,7 @@ impl Gameplay {
             walls,
             asteroids,
             last_spawn_asteroid_time: -INFINITY,
+            bullets: vec![],
         }
     }
 
@@ -242,7 +261,13 @@ impl Gameplay {
                 // WHITE,
                 Color::new(1.00, 1.00, 1.00, 0.5),
             );
+            // intersection point
             draw_circle(intersection.x, intersection.y, 2., ORANGE);
+        }
+
+        // draw bullet
+        for b in &self.bullets {
+            draw_circle(b.circle.x, b.circle.y, b.circle.r, BULLET_COLOR);
         }
     }
 
@@ -267,6 +292,24 @@ impl Gameplay {
             self.player_position = self
                 .player_position
                 .clamp(Vec2::default(), Vec2::new(VIRTUAL_WIDTH, VIRTUAL_HEIGHT));
+        }
+    }
+
+    fn player_attack(&mut self, ctx: &mut Context) {
+        let delta = get_frame_time();
+        let BULLET_MOVEMENT_SPEED = 200.;
+        for b in &mut self.bullets {
+            b.circle.x += BULLET_MOVEMENT_SPEED * delta;
+        }
+        // TODO: Add another action for "attack"
+        if action_pressed(Action::Confirm, &ctx.gamepads) {
+            self.bullets.push(Bullet {
+                circle: Circle::new(
+                    self.player_position.x + 10.,
+                    self.player_position.y,
+                    BULLET_RADIUS,
+                ),
+            });
         }
     }
 
