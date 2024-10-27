@@ -2,11 +2,11 @@
 
 use macroquad::prelude::*;
 use miniquad::conf::Icon;
-use yourgame::consts::*;
-use yourgame::context::Context;
-use yourgame::scene::gameplay::Gameplay;
-use yourgame::scene::EScene;
-use yourgame::scene::{main_menu::MainMenu, Scene};
+use quads_jam_2024::consts::*;
+use quads_jam_2024::context::Context;
+use quads_jam_2024::scene::gameplay::Gameplay;
+use quads_jam_2024::scene::EScene;
+use quads_jam_2024::scene::{main_menu::MainMenu, Scene};
 
 fn window_conf() -> Conf {
     Conf {
@@ -50,12 +50,12 @@ async fn main() {
 
         // render target drawing
         set_camera(&ctx.render_target_cam);
-        clear_background(yourgame::color::DARKGRAY);
+        clear_background(quads_jam_2024::color::DARKGRAY);
         current_scene.draw(&mut ctx);
 
         // regular drawing
         set_default_camera();
-        clear_background(yourgame::color::DARKGRAY); // Will be the letterbox color
+        clear_background(quads_jam_2024::color::DARKGRAY); // Will be the letterbox color
 
         // draw the render target properly scaled and letterboxed
         let scale: f32 = f32::min(

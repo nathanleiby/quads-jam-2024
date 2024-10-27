@@ -1,5 +1,5 @@
 [package]
-name = "yourgame"
+name = "quads_jam_2024"
 version = "0.1.0-dev"
 edition = "2021"
 description = "[compelling description]"
@@ -27,8 +27,8 @@ opt-level = 1
 opt-level = 3
 
 [package.metadata.bundle]
-name = "YourGame"
-identifier = "com.example.yourgame"
+name = "quads_jam_2024"
+identifier = "com.example.quads_jam_2024"
 icon = ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png"]
 resources = ["assets"]
 copyright = "Your Game THE YEAR"
