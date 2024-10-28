@@ -121,7 +121,7 @@ impl Gameplay {
             rect: Rect::new(300., 600., 30., 30.),
         }];
 
-        let mut walls = vec![
+        let walls = vec![
             // outer walls
             // Segment {
             //     // Left
