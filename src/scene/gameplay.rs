@@ -15,7 +15,7 @@ use macroquad::color::*;
 use macroquad::math::Circle;
 use macroquad::math::Rect;
 use macroquad::math::Vec2;
-use macroquad::rand;
+use macroquad::rand::rand;
 use macroquad::shapes::draw_circle;
 use macroquad::shapes::draw_line;
 use macroquad::time::get_frame_time;
@@ -35,6 +35,7 @@ const MOVEMENT_SPEED: f32 = 300.;
 const BULLET_RADIUS: f32 = 5.;
 const BULLET_COLOR: Color = GREEN;
 const BULLET_MOVEMENT_SPEED: f32 = 200.;
+const PLAYER_RADIUS: f32 = 5.;
 
 struct Bullet {
     circle: Circle,
@@ -82,7 +83,11 @@ impl Scene for Gameplay {
         self.player_attack(ctx);
         self.asteroid_movement();
 
-        let player_circle = Circle::new(self.player_position.x, self.player_position.y, 2.);
+        let player_circle = Circle::new(
+            self.player_position.x,
+            self.player_position.y,
+            PLAYER_RADIUS,
+        );
         // check for collisions
         for a in &self.asteroids {
             if player_circle.overlaps_rect(&a.rect) {
@@ -118,59 +123,63 @@ impl Gameplay {
 
         let mut walls = vec![
             // outer walls
+            // Segment {
+            //     // Left
+            //     src: Vec2::new(0., 0.),
+            //     dst: Vec2::new(0., VIRTUAL_HEIGHT),
+            // },
             Segment {
-                src: Vec2::new(0., 0.),
-                dst: Vec2::new(0., VIRTUAL_HEIGHT),
-            },
-            Segment {
+                // Top
                 src: Vec2::new(0., 0.),
                 dst: Vec2::new(VIRTUAL_WIDTH, 0.),
             },
+            // Segment {
+            //     // Right
+            //     src: Vec2::new(VIRTUAL_WIDTH, 0.),
+            //     dst: Vec2::new(VIRTUAL_WIDTH, VIRTUAL_HEIGHT),
+            // },
             Segment {
-                src: Vec2::new(VIRTUAL_WIDTH, 0.),
-                dst: Vec2::new(VIRTUAL_WIDTH, VIRTUAL_HEIGHT),
-            },
-            Segment {
+                // Bottom
                 src: Vec2::new(0., VIRTUAL_HEIGHT),
                 dst: Vec2::new(VIRTUAL_WIDTH, VIRTUAL_HEIGHT),
             },
-            // inner obstacles
-            Segment {
-                src: Vec2::new(0., 100.),
-                dst: Vec2::new(100., 100.),
-            },
-            Segment {
-                src: Vec2::new(100., 0.),
-                dst: Vec2::new(100., 100.),
-            },
-            Segment {
-                src: Vec2::new(300., 100.),
-                dst: Vec2::new(400., 100.),
-            },
-            Segment {
-                src: Vec2::new(400., 300.),
-                dst: Vec2::new(450., 400.),
-            },
-            Segment {
-                src: Vec2::new(500., 300.),
-                dst: Vec2::new(590., 200.),
-            },
+            //     // inner obstacles
+            //     Segment {
+            //         src: Vec2::new(0., 100.),
+            //         dst: Vec2::new(100., 100.),
+            //     },
+            //     Segment {
+            //         src: Vec2::new(100., 0.),
+            //         dst: Vec2::new(100., 100.),
+            //     },
+            //     Segment {
+            //         src: Vec2::new(300., 100.),
+            //         dst: Vec2::new(400., 100.),
+            //     },
+            //     Segment {
+            //         src: Vec2::new(400., 300.),
+            //         dst: Vec2::new(450., 400.),
+            //     },
+            //     Segment {
+            //         src: Vec2::new(500., 300.),
+            //         dst: Vec2::new(590., 200.),
+            //     },
         ];
 
         // TODO: How to seed? It's giving same results every time.
-        let gen_uniform = || rand::rand() as f32 / u32::MAX as f32;
-        for _ in 0..5 {
-            walls.push(Segment {
-                src: Vec2::new(
-                    gen_uniform() * VIRTUAL_WIDTH,
-                    gen_uniform() * VIRTUAL_HEIGHT,
-                ),
-                dst: Vec2::new(
-                    gen_uniform() * VIRTUAL_WIDTH,
-                    gen_uniform() * VIRTUAL_HEIGHT,
-                ),
-            })
-        }
+        // let gen_uniform = || rand::rand() as f32 / u32::MAX as f32;
+        // for _ in 0..5 {
+        //     walls.push(Segment {
+        //         src: Vec2::new(
+        //             gen_uniform() * VIRTUAL_WIDTH,
+        //             gen_uniform() * VIRTUAL_HEIGHT,
+        //         ),
+        //         dst: Vec2::new(
+        //             gen_uniform() * VIRTUAL_WIDTH,
+        //             gen_uniform() * VIRTUAL_HEIGHT,
+        //         ),
+        //     })
+        // }
 
         Self {
             pause_subscene,
@@ -183,19 +192,17 @@ impl Gameplay {
     }
 
     fn _draw_scene(&mut self) {
-        // Draw light source
         let source = self.player_position;
-        draw_circle(source.x, source.y, 10., WHITE);
-        // draw_texture(&ctx.textures.example, 400., 300., WHITE);
         // Draw lines from light source to corners of squares
-
         // Create rays, sweeping over 360 degrees
         // TODO: Replace with only rays pointed at each intersection point in scene
         let mut rays = vec![];
+        // let num_rays = 60;
         let num_rays = 360;
         for idx in 0..num_rays {
             let ratio = idx as f32 / num_rays as f32;
-            let angle = ratio * 2. * PI;
+            // let angle = ratio * (2. * PI / 6.);
+            let angle = ratio * (2. * PI);
             rays.push(Ray {
                 origin: source,
                 dir: Vec2::new(angle.cos(), angle.sin()),
@@ -214,9 +221,9 @@ impl Gameplay {
             draw_line(w.src.x, w.src.y, w.dst.x, w.dst.y, 4., BLUE);
         }
 
-        for seg in &asteroids_segs {
-            draw_line(seg.src.x, seg.src.y, seg.dst.x, seg.dst.y, 2., BROWN);
-        }
+        // for seg in &asteroids_segs {
+        //     draw_line(seg.src.x, seg.src.y, seg.dst.x, seg.dst.y, 2., BROWN);
+        // }
 
         let mut collideable = vec![];
         for w in &self.walls {
@@ -264,6 +271,10 @@ impl Gameplay {
             // intersection point
             draw_circle(intersection.x, intersection.y, 2., ORANGE);
         }
+
+        // Draw Player (light source)
+        draw_circle(source.x, source.y, PLAYER_RADIUS, WHITE);
+        // draw_texture(&ctx.textures.example, 400., 300., WHITE);
 
         // draw bullet
         for b in &self.bullets {
@@ -316,13 +327,23 @@ impl Gameplay {
         let asteroid_movement_speed = 50.;
         let delta = get_frame_time();
         for a in &mut self.asteroids {
-            a.rect.x += asteroid_movement_speed * delta;
+            a.rect.x -= asteroid_movement_speed * delta;
         }
     }
 
     fn spawn_asteroid(&mut self) {
+        // random y
+        let ratio_y = rand() as f32 / u32::MAX as f32;
+        // random height
+        let ratio_h = rand() as f32 / u32::MAX as f32;
+
         self.asteroids.push(Asteroid {
-            rect: Rect::new(0., 0., 30., 30.),
+            rect: Rect::new(
+                VIRTUAL_WIDTH,
+                (ratio_y * VIRTUAL_HEIGHT).floor(),
+                30.,
+                20. + (180. * ratio_h).floor(),
+            ),
         })
     }
 }

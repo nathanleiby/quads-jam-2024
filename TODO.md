@@ -6,7 +6,7 @@ high level: implement lighting approach described here:
 --
 
 - [x] add asteroids moving right to left
-- [ ] add collisions betweeen asteroids and player
+- [..] add collisions betweeen asteroids and player
 - [ ] crash = game over
 - spawn "warp crystals" + allow user to collect them
 - collecting N "warp cystals" completes level
