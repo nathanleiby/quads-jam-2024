@@ -19,4 +19,4 @@ rm -rf web-release/**/.DS_Store
 rm -rf web-release/**/*/.DS_Store
 zip -r web-release.zip web-release
 echo "web release zipped into web-release.zip"
-butler push web-release.zip $itchio_user/$game_name:html
+butler push web-release.zip $itchio_user/$itchio_game_name:html
